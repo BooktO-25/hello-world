@@ -1,0 +1,3 @@
+UAT deployment smoke test
+Created to verify the sqv2.2-uat Vercel project deploys from the uat branch.
+This file does not change application behavior.
