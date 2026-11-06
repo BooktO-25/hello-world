@@ -1,0 +1,44 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function hasUserDoc() {
+      return isSignedIn() && exists(/databases/$(database)/documents/users/$(request.auth.uid));
+    }
+
+    function getUserData() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    function isSuperAdmin() {
+      return hasUserDoc() && getUserData().get('role', '') == 'SUPER_ADMIN';
+    }
+
+    function getUserBusinessId() {
+      return hasUserDoc() ? getUserData().get('businessId', '') : '';
+    }
+
+    function myRole() {
+      return hasUserDoc() ? getUserData().get('role', '') : '';
+    }
+
+    // --- Regional Admin: appointed by Super Admin, scoped to one or more
+    // geographic regions (see Business.region). Acts like a Super Admin but
+    // only within businesses whose region they've been assigned.
+    function myAssignedRegions() {
+      return hasUserDoc() ? getUserData().get('assignedRegions', []) : [];
+    }
+    function isRegionalAdmin() {
+      return hasUserDoc() && getUserData().get('role', '') == 'REGIONAL_ADMIN';
+    }
+    function isRegionalAdminForRegion(region) {
+      return isRegionalAdmin() && region in myAssignedRegions();
+    }
+    function isRegionalAdminForBusiness(businessId) {
+      return isRegionalAdmin()
+        && exists(/databases/$(database)/documents/businesses/$(businessId))
+        && isRegionalAdminForRegio�ۧq˞�
